@@ -4,10 +4,10 @@ import { GeistMono } from 'geist/font/mono'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Invoice | Delivery Chalan | Quotation',
-  description: 'Created By Kokonaat',
-  generator: 'Kokonaat',
-}
+  title: "Invoice | Delivery Invoice | Quotation",
+  description: "Created By Kokonaat",
+  generator: "Kokonaat",
+};
 
 export default function RootLayout({
   children,
