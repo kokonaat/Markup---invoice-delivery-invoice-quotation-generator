@@ -184,17 +184,28 @@ const currencies = [
   { code: "ZAR", symbol: "R", name: "South African Rand" },
   { code: "ZMW", symbol: "ZK", name: "Zambian Kwacha" },
   { code: "ZWL", symbol: "Z$", name: "Zimbabwean Dollar" },
-]
+];
 
 // Default template for a new document
-const getDefaultTemplate = (docType: "invoice" | "delivery-challan" | "quotation"): InvoiceData => ({
+const getDefaultTemplate = (
+  docType: "invoice" | "delivery-challan" | "quotation"
+): InvoiceData => ({
   documentType: docType,
   invoiceNumber: "",
   recipient: "",
   subject: "",
   address: "",
   date: new Date().toISOString().split("T")[0],
-  lineItems: [{ id: 1, product: "", description: "As per Sample", quantity: 0, rate: 0, amount: 0 }],
+  lineItems: [
+    {
+      id: 1,
+      product: "",
+      description: "As per Sample",
+      quantity: 0,
+      rate: 0,
+      amount: 0,
+    },
+  ],
   subtotal: 0,
   deliveryCost: 0,
   discount: 0,
@@ -212,61 +223,71 @@ const getDefaultTemplate = (docType: "invoice" | "delivery-challan" | "quotation
     name: "Thomas Edison",
     designation: "Chief Executive Officer",
   },
-})
+  termsAndConditions: {
+    includeTerms: false,
+    terms: [
+      "A 50% advance payment is required. Remaining 50% due upon completion within 15 days of delivery.",
+    ],
+  },
+});
 
 export default function InvoiceGenerator() {
-  const [currentDocType, setCurrentDocType] = useState<"invoice" | "delivery-challan" | "quotation">("invoice")
-  const [invoiceData, setInvoiceData] = useState<InvoiceData>(getDefaultTemplate("invoice"))
-  const [isLoadedFromDraft, setIsLoadedFromDraft] = useState(false)
+  const [currentDocType, setCurrentDocType] = useState<
+    "invoice" | "delivery-challan" | "quotation"
+  >("invoice");
+  const [invoiceData, setInvoiceData] = useState<InvoiceData>(
+    getDefaultTemplate("invoice")
+  );
+  const [isLoadedFromDraft, setIsLoadedFromDraft] = useState(false);
   const [drafts, setDrafts] = useState<{ [key: string]: InvoiceData[] }>({
     invoice: [],
     "delivery-challan": [],
     quotation: [],
-  })
-  const invoiceRef = useRef<HTMLDivElement>(null)
-  const logoInputRef = useRef<HTMLInputElement>(null)
+  });
+  const invoiceRef = useRef<HTMLDivElement>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
 
   // Load drafts from local storage on component mount
   useEffect(() => {
-    const storedDrafts = localStorage.getItem("invoiceDrafts")
+    const storedDrafts = localStorage.getItem("invoiceDrafts");
     if (storedDrafts) {
       try {
-        const parsedDrafts = JSON.parse(storedDrafts)
-        setDrafts(parsedDrafts)
+        const parsedDrafts = JSON.parse(storedDrafts);
+        setDrafts(parsedDrafts);
       } catch (error) {
-        console.error("Error parsing drafts from local storage:", error)
+        console.error("Error parsing drafts from local storage:", error);
       }
     }
-  }, [])
+  }, []);
 
   // Handle document type change
   const handleDocTypeChange = (value: string) => {
-    const newDocType = value as "invoice" | "delivery-challan" | "quotation"
+    const newDocType = value as "invoice" | "delivery-challan" | "quotation";
 
     // Reset form to default values for the new document type
-    setInvoiceData(getDefaultTemplate(newDocType))
-    setCurrentDocType(newDocType)
-    setIsLoadedFromDraft(false)
-  }
+    setInvoiceData(getDefaultTemplate(newDocType));
+    setCurrentDocType(newDocType);
+    setIsLoadedFromDraft(false);
+  };
 
   // Handle logo upload
   const handleLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
+    const file = event.target.files?.[0];
     if (file) {
-      const reader = new FileReader()
+      const reader = new FileReader();
       reader.onload = (e) => {
-        const logoDataUrl = e.target?.result as string
+        const logoDataUrl = e.target?.result as string;
         setInvoiceData({
           ...invoiceData,
           companyInfo: {
             ...invoiceData.companyInfo,
             logo: logoDataUrl,
           },
-        })
-      }
-      reader.readAsDataURL(file)
+        });
+      };
+      reader.readAsDataURL(file);
     }
-  }
+  };
 
   // Add phone number field
   const addPhoneNumber = () => {
@@ -276,182 +297,247 @@ export default function InvoiceGenerator() {
         ...invoiceData.companyInfo,
         phoneNumbers: [...invoiceData.companyInfo.phoneNumbers, ""],
       },
-    })
-  }
+    });
+  };
 
   // Remove phone number field
   const removePhoneNumber = (index: number) => {
-    const updatedPhoneNumbers = invoiceData.companyInfo.phoneNumbers.filter((_, i) => i !== index)
+    const updatedPhoneNumbers = invoiceData.companyInfo.phoneNumbers.filter(
+      (_, i) => i !== index
+    );
     setInvoiceData({
       ...invoiceData,
       companyInfo: {
         ...invoiceData.companyInfo,
         phoneNumbers: updatedPhoneNumbers,
       },
-    })
-  }
+    });
+  };
 
   // Update phone number
   const updatePhoneNumber = (index: number, value: string) => {
-    const updatedPhoneNumbers = [...invoiceData.companyInfo.phoneNumbers]
-    updatedPhoneNumbers[index] = value
+    const updatedPhoneNumbers = [...invoiceData.companyInfo.phoneNumbers];
+    updatedPhoneNumbers[index] = value;
     setInvoiceData({
       ...invoiceData,
       companyInfo: {
         ...invoiceData.companyInfo,
         phoneNumbers: updatedPhoneNumbers,
       },
-    })
-  }
+    });
+  };
+
+  // Terms and conditions functions
+  const addTerm = () => {
+    setInvoiceData({
+      ...invoiceData,
+      termsAndConditions: {
+        ...invoiceData.termsAndConditions!,
+        terms: [...invoiceData.termsAndConditions!.terms, ""],
+      },
+    });
+  };
+
+  const removeTerm = (index: number) => {
+    const updatedTerms = invoiceData.termsAndConditions!.terms.filter(
+      (_, i) => i !== index
+    );
+    setInvoiceData({
+      ...invoiceData,
+      termsAndConditions: {
+        ...invoiceData.termsAndConditions!,
+        terms: updatedTerms,
+      },
+    });
+  };
+
+  const updateTerm = (index: number, value: string) => {
+    const updatedTerms = [...invoiceData.termsAndConditions!.terms];
+    updatedTerms[index] = value;
+    setInvoiceData({
+      ...invoiceData,
+      termsAndConditions: {
+        ...invoiceData.termsAndConditions!,
+        terms: updatedTerms,
+      },
+    });
+  };
+
+  const toggleTermsAndConditions = (checked: boolean) => {
+    setInvoiceData({
+      ...invoiceData,
+      termsAndConditions: {
+        ...invoiceData.termsAndConditions!,
+        includeTerms: checked,
+      },
+    });
+  };
 
   // Get currency symbol
   const getCurrencySymbol = () => {
-    const currency = currencies.find((c) => c.code === invoiceData.currency)
-    return currency?.symbol || "$"
-  }
+    const currency = currencies.find((c) => c.code === invoiceData.currency);
+    return currency?.symbol || "$";
+  };
 
   const handlePrint = () => {
     if (invoiceRef.current) {
       // Open print dialog
-      window.print()
+      window.print();
     }
-  }
+  };
 
-  const updateLineItem = (index: number, field: keyof LineItem, value: string | number) => {
-    const updatedItems = [...invoiceData.lineItems]
+  const updateLineItem = (
+    index: number,
+    field: keyof LineItem,
+    value: string | number
+  ) => {
+    const updatedItems = [...invoiceData.lineItems];
 
     if (field === "quantity" || field === "rate") {
-      const numValue = typeof value === "string" ? Number.parseFloat(value) || 0 : value
+      const numValue =
+        typeof value === "string" ? Number.parseFloat(value) || 0 : value;
       updatedItems[index] = {
         ...updatedItems[index],
         [field]: numValue,
-        amount: field === "quantity" ? numValue * updatedItems[index].rate : updatedItems[index].quantity * numValue,
-      }
+        amount:
+          field === "quantity"
+            ? numValue * updatedItems[index].rate
+            : updatedItems[index].quantity * numValue,
+      };
     } else {
       updatedItems[index] = {
         ...updatedItems[index],
         [field]: value,
-      }
+      };
     }
 
-    const subtotal = updatedItems.reduce((sum, item) => sum + item.amount, 0)
-    const total = subtotal + invoiceData.deliveryCost - invoiceData.discount
+    const subtotal = updatedItems.reduce((sum, item) => sum + item.amount, 0);
+    const total = subtotal + invoiceData.deliveryCost - invoiceData.discount;
 
     setInvoiceData({
       ...invoiceData,
       lineItems: updatedItems,
       subtotal,
       total,
-    })
-  }
+    });
+  };
 
   const updateDeliveryCost = (value: string) => {
-    const deliveryCost = Number.parseFloat(value) || 0
-    const total = invoiceData.subtotal + deliveryCost - invoiceData.discount
+    const deliveryCost = Number.parseFloat(value) || 0;
+    const total = invoiceData.subtotal + deliveryCost - invoiceData.discount;
 
     setInvoiceData({
       ...invoiceData,
       deliveryCost,
       total,
-    })
-  }
+    });
+  };
 
   const updateDiscount = (value: string) => {
-    const discount = Number.parseFloat(value) || 0
-    const total = invoiceData.subtotal + invoiceData.deliveryCost - discount
+    const discount = Number.parseFloat(value) || 0;
+    const total = invoiceData.subtotal + invoiceData.deliveryCost - discount;
 
     setInvoiceData({
       ...invoiceData,
       discount,
       total,
-    })
-  }
+    });
+  };
 
   const updateAdvance = (value: string) => {
-    const advance = Number.parseFloat(value) || 0
+    const advance = Number.parseFloat(value) || 0;
 
     setInvoiceData({
       ...invoiceData,
       advance,
-    })
-  }
+    });
+  };
 
   const addLineItem = () => {
-    const newId = Math.max(0, ...invoiceData.lineItems.map((item) => item.id)) + 1
+    const newId =
+      Math.max(0, ...invoiceData.lineItems.map((item) => item.id)) + 1;
     setInvoiceData({
       ...invoiceData,
       lineItems: [
         ...invoiceData.lineItems,
-        { id: newId, product: "", description: "As per Sample", quantity: 0, rate: 0, amount: 0 },
+        {
+          id: newId,
+          product: "",
+          description: "As per Sample",
+          quantity: 0,
+          rate: 0,
+          amount: 0,
+        },
       ],
-    })
-  }
+    });
+  };
 
   const removeLineItem = (id: number) => {
-    const updatedItems = invoiceData.lineItems.filter((item) => item.id !== id)
-    const subtotal = updatedItems.reduce((sum, item) => sum + item.amount, 0)
-    const total = subtotal + invoiceData.deliveryCost - invoiceData.discount
+    const updatedItems = invoiceData.lineItems.filter((item) => item.id !== id);
+    const subtotal = updatedItems.reduce((sum, item) => sum + item.amount, 0);
+    const total = subtotal + invoiceData.deliveryCost - invoiceData.discount;
 
     setInvoiceData({
       ...invoiceData,
       lineItems: updatedItems,
       subtotal,
       total,
-    })
-  }
+    });
+  };
 
   // Get the appropriate document number label based on document type
   const getDocumentNumberLabel = () => {
     switch (currentDocType) {
       case "invoice":
-        return "Invoice #"
+        return "Invoice #";
       case "delivery-challan":
-        return "Challan #"
+        return "Challan #";
       case "quotation":
-        return "Quotation #"
+        return "Quotation #";
       default:
-        return "Document #"
+        return "Document #";
     }
-  }
+  };
 
   // Save current invoice data as draft to local storage
   const saveAsDraft = () => {
-    const updatedDrafts = { ...drafts }
+    const updatedDrafts = { ...drafts };
 
     // Add current invoice data to the appropriate array
     updatedDrafts[currentDocType] = [
       ...(updatedDrafts[currentDocType] || []),
       { ...invoiceData, savedAt: new Date().toISOString() },
-    ]
+    ];
 
     // Save to local storage
-    localStorage.setItem("invoiceDrafts", JSON.stringify(updatedDrafts))
-    setDrafts(updatedDrafts)
-    setIsLoadedFromDraft(true)
+    localStorage.setItem("invoiceDrafts", JSON.stringify(updatedDrafts));
+    setDrafts(updatedDrafts);
+    setIsLoadedFromDraft(true);
 
-    alert(`Saved as ${currentDocType} draft!`)
-  }
+    alert(`Saved as ${currentDocType} draft!`);
+  };
 
   // Load the most recent draft of the current document type
   const loadDraft = () => {
     if (drafts[currentDocType] && drafts[currentDocType].length > 0) {
       // Get the most recent draft
-      const mostRecentDraft = drafts[currentDocType][drafts[currentDocType].length - 1]
-      setInvoiceData(mostRecentDraft)
-      setIsLoadedFromDraft(true)
+      const mostRecentDraft =
+        drafts[currentDocType][drafts[currentDocType].length - 1];
+      setInvoiceData(mostRecentDraft);
+      setIsLoadedFromDraft(true);
     } else {
-      alert(`No ${currentDocType} drafts found.`)
+      alert(`No ${currentDocType} drafts found.`);
     }
-  }
+  };
 
   // Reset form to default state for current document type
   const resetData = () => {
-    setInvoiceData(getDefaultTemplate(currentDocType))
-    setIsLoadedFromDraft(false)
-  }
+    setInvoiceData(getDefaultTemplate(currentDocType));
+    setIsLoadedFromDraft(false);
+  };
 
   // Check if there are drafts available for the current document type
-  const hasDrafts = drafts[currentDocType]?.length > 0
+  const hasDrafts = drafts[currentDocType]?.length > 0;
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 print:!grid-cols-1 print:gap-0">
@@ -472,7 +558,10 @@ export default function InvoiceGenerator() {
                   onChange={(e) =>
                     setInvoiceData({
                       ...invoiceData,
-                      companyInfo: { ...invoiceData.companyInfo, name: e.target.value },
+                      companyInfo: {
+                        ...invoiceData.companyInfo,
+                        name: e.target.value,
+                      },
                     })
                   }
                   placeholder="Company Name"
@@ -490,10 +579,18 @@ export default function InvoiceGenerator() {
                     ref={logoInputRef}
                     className="hidden"
                   />
-                  <Button type="button" variant="outline" onClick={() => logoInputRef.current?.click()}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => logoInputRef.current?.click()}
+                  >
                     Upload Logo
                   </Button>
-                  {invoiceData.companyInfo.logo && <span className="text-sm text-green-600">Logo uploaded</span>}
+                  {invoiceData.companyInfo.logo && (
+                    <span className="text-sm text-green-600">
+                      Logo uploaded
+                    </span>
+                  )}
                 </div>
               </div>
 
@@ -506,7 +603,10 @@ export default function InvoiceGenerator() {
                   onChange={(e) =>
                     setInvoiceData({
                       ...invoiceData,
-                      companyInfo: { ...invoiceData.companyInfo, email: e.target.value },
+                      companyInfo: {
+                        ...invoiceData.companyInfo,
+                        email: e.target.value,
+                      },
                     })
                   }
                   placeholder="company@example.com"
@@ -523,7 +623,12 @@ export default function InvoiceGenerator() {
                       placeholder="Phone number"
                     />
                     {invoiceData.companyInfo.phoneNumbers.length > 1 && (
-                      <Button type="button" variant="outline" size="icon" onClick={() => removePhoneNumber(index)}>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        onClick={() => removePhoneNumber(index)}
+                      >
                         <X className="h-4 w-4" />
                       </Button>
                     )}
@@ -547,13 +652,18 @@ export default function InvoiceGenerator() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="document-type">Document Type</Label>
-                <Select value={currentDocType} onValueChange={handleDocTypeChange}>
+                <Select
+                  value={currentDocType}
+                  onValueChange={handleDocTypeChange}
+                >
                   <SelectTrigger id="document-type">
                     <SelectValue placeholder="Select document type" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="invoice">Invoice</SelectItem>
-                    <SelectItem value="delivery-challan">Delivery Challan</SelectItem>
+                    <SelectItem value="delivery-challan">
+                      Delivery Note
+                    </SelectItem>
                     <SelectItem value="quotation">Quotation</SelectItem>
                   </SelectContent>
                 </Select>
@@ -563,7 +673,12 @@ export default function InvoiceGenerator() {
                 <Input
                   id="invoice-number"
                   value={invoiceData.invoiceNumber}
-                  onChange={(e) => setInvoiceData({ ...invoiceData, invoiceNumber: e.target.value })}
+                  onChange={(e) =>
+                    setInvoiceData({
+                      ...invoiceData,
+                      invoiceNumber: e.target.value,
+                    })
+                  }
                   placeholder={getDocumentNumberLabel()}
                 />
               </div>
@@ -578,7 +693,9 @@ export default function InvoiceGenerator() {
                   searchText: `${currency.name} ${currency.code} ${currency.symbol}`,
                 }))}
                 value={invoiceData.currency}
-                onValueChange={(value) => setInvoiceData({ ...invoiceData, currency: value })}
+                onValueChange={(value) =>
+                  setInvoiceData({ ...invoiceData, currency: value })
+                }
                 placeholder="Select currency..."
                 searchPlaceholder="Search currencies..."
                 className="w-full"
@@ -590,7 +707,9 @@ export default function InvoiceGenerator() {
               <Input
                 id="recipient"
                 value={invoiceData.recipient}
-                onChange={(e) => setInvoiceData({ ...invoiceData, recipient: e.target.value })}
+                onChange={(e) =>
+                  setInvoiceData({ ...invoiceData, recipient: e.target.value })
+                }
                 placeholder="Microsoft Corporation"
               />
             </div>
@@ -600,7 +719,9 @@ export default function InvoiceGenerator() {
               <Input
                 id="subject"
                 value={invoiceData.subject}
-                onChange={(e) => setInvoiceData({ ...invoiceData, subject: e.target.value })}
+                onChange={(e) =>
+                  setInvoiceData({ ...invoiceData, subject: e.target.value })
+                }
                 placeholder="Software Development Services"
               />
             </div>
@@ -610,7 +731,9 @@ export default function InvoiceGenerator() {
               <Textarea
                 id="address"
                 value={invoiceData.address}
-                onChange={(e) => setInvoiceData({ ...invoiceData, address: e.target.value })}
+                onChange={(e) =>
+                  setInvoiceData({ ...invoiceData, address: e.target.value })
+                }
                 placeholder="Recipient's address"
                 rows={2}
               />
@@ -622,7 +745,9 @@ export default function InvoiceGenerator() {
                 id="date"
                 type="date"
                 value={invoiceData.date}
-                onChange={(e) => setInvoiceData({ ...invoiceData, date: e.target.value })}
+                onChange={(e) =>
+                  setInvoiceData({ ...invoiceData, date: e.target.value })
+                }
               />
             </div>
 
@@ -632,9 +757,13 @@ export default function InvoiceGenerator() {
                 <Switch
                   id="show-totals"
                   checked={invoiceData.showTotals}
-                  onCheckedChange={(checked) => setInvoiceData({ ...invoiceData, showTotals: checked })}
+                  onCheckedChange={(checked) =>
+                    setInvoiceData({ ...invoiceData, showTotals: checked })
+                  }
                 />
-                <Label htmlFor="show-totals">Show subtotal and total amounts</Label>
+                <Label htmlFor="show-totals">
+                  Show subtotal and total amounts
+                </Label>
               </div>
             )}
 
@@ -653,6 +782,63 @@ export default function InvoiceGenerator() {
             )}
           </div>
 
+          {/* Terms and Conditions Section - Only for quotations */}
+          {currentDocType === "quotation" && (
+            <div className="mb-6 p-4 border rounded-lg bg-gray-50">
+              <div className="flex items-center space-x-2 mb-4">
+                <Checkbox
+                  id="include-terms"
+                  checked={
+                    invoiceData.termsAndConditions?.includeTerms || false
+                  }
+                  onCheckedChange={toggleTermsAndConditions}
+                />
+                <Label htmlFor="include-terms">
+                  Include Terms & Conditions
+                </Label>
+              </div>
+
+              {invoiceData.termsAndConditions?.includeTerms && (
+                <div className="space-y-3">
+                  <Label>Terms & Conditions</Label>
+                  {invoiceData.termsAndConditions.terms.map((term, index) => (
+                    <div key={index} className="flex items-start gap-2">
+                      <Textarea
+                        value={term}
+                        onChange={(e) => updateTerm(index, e.target.value)}
+                        placeholder="Enter terms and conditions..."
+                        rows={2}
+                        className="flex-1"
+                      />
+                      <div className="flex flex-col gap-1 mt-1">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          onClick={addTerm}
+                          className="h-8 w-8"
+                        >
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                        {invoiceData.termsAndConditions!.terms.length > 1 && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            onClick={() => removeTerm(index)}
+                            className="h-8 w-8"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Signature Section */}
           <div className="mb-6 p-4 border rounded-lg bg-gray-50">
             <div className="flex items-center space-x-2 mb-4">
@@ -662,7 +848,10 @@ export default function InvoiceGenerator() {
                 onCheckedChange={(checked) =>
                   setInvoiceData({
                     ...invoiceData,
-                    signatureInfo: { ...invoiceData.signatureInfo, includeSignature: !!checked },
+                    signatureInfo: {
+                      ...invoiceData.signatureInfo,
+                      includeSignature: !!checked,
+                    },
                   })
                 }
               />
@@ -679,7 +868,10 @@ export default function InvoiceGenerator() {
                     onChange={(e) =>
                       setInvoiceData({
                         ...invoiceData,
-                        signatureInfo: { ...invoiceData.signatureInfo, name: e.target.value },
+                        signatureInfo: {
+                          ...invoiceData.signatureInfo,
+                          name: e.target.value,
+                        },
                       })
                     }
                     placeholder="Full Name"
@@ -693,7 +885,10 @@ export default function InvoiceGenerator() {
                     onChange={(e) =>
                       setInvoiceData({
                         ...invoiceData,
-                        signatureInfo: { ...invoiceData.signatureInfo, designation: e.target.value },
+                        signatureInfo: {
+                          ...invoiceData.signatureInfo,
+                          designation: e.target.value,
+                        },
                       })
                     }
                     placeholder="Job Title"
@@ -705,7 +900,9 @@ export default function InvoiceGenerator() {
 
           <h3 className="text-xl font-bold mb-4">
             Line Items{" "}
-            <span className="text-sm font-normal text-gray-500">(For best results, limit to 5 items per page)</span>
+            <span className="text-sm font-normal text-gray-500">
+              (For best results, limit to 5 items per page)
+            </span>
           </h3>
 
           {invoiceData.lineItems.map((item, index) => (
@@ -717,7 +914,9 @@ export default function InvoiceGenerator() {
                   <Input
                     id={`product-${item.id}`}
                     value={item.product}
-                    onChange={(e) => updateLineItem(index, "product", e.target.value)}
+                    onChange={(e) =>
+                      updateLineItem(index, "product", e.target.value)
+                    }
                     placeholder="Product name"
                   />
                 </div>
@@ -726,7 +925,9 @@ export default function InvoiceGenerator() {
                   <Textarea
                     id={`description-${item.id}`}
                     value={item.description}
-                    onChange={(e) => updateLineItem(index, "description", e.target.value)}
+                    onChange={(e) =>
+                      updateLineItem(index, "description", e.target.value)
+                    }
                     placeholder="Product description"
                     rows={2}
                   />
@@ -741,7 +942,9 @@ export default function InvoiceGenerator() {
                     id={`quantity-${item.id}`}
                     type="number"
                     value={item.quantity || ""}
-                    onChange={(e) => updateLineItem(index, "quantity", e.target.value)}
+                    onChange={(e) =>
+                      updateLineItem(index, "quantity", e.target.value)
+                    }
                     placeholder="0"
                   />
                 </div>
@@ -754,7 +957,9 @@ export default function InvoiceGenerator() {
                         id={`rate-${item.id}`}
                         type="number"
                         value={item.rate || ""}
-                        onChange={(e) => updateLineItem(index, "rate", e.target.value)}
+                        onChange={(e) =>
+                          updateLineItem(index, "rate", e.target.value)
+                        }
                         placeholder="0.00"
                       />
                     </div>
@@ -770,7 +975,9 @@ export default function InvoiceGenerator() {
                 )}
 
                 <div
-                  className={`col-span-12 sm:col-span-${currentDocType === "delivery-challan" ? "6" : "3"} flex items-end justify-end`}
+                  className={`col-span-12 sm:col-span-${
+                    currentDocType === "delivery-challan" ? "6" : "3"
+                  } flex items-end justify-end`}
                 >
                   <Button
                     variant="destructive"
@@ -834,8 +1041,8 @@ export default function InvoiceGenerator() {
               {currentDocType === "invoice"
                 ? "Invoice"
                 : currentDocType === "delivery-challan"
-                  ? "Challan"
-                  : "Quotation"}
+                ? "Challan"
+                : "Quotation"}
             </Button>
           </div>
         </CardContent>
@@ -847,5 +1054,5 @@ export default function InvoiceGenerator() {
         </div>
       </div>
     </div>
-  )
+  );
 }

@@ -183,37 +183,40 @@ export default function InvoicePreview({ data }: InvoicePreviewProps) {
   const getDocumentTypeDisplay = () => {
     switch (data.documentType) {
       case "invoice":
-        return "INVOICE"
+        return "INVOICE";
       case "delivery-challan":
-        return "DELIVERY CHALLAN"
+        return "Delivery Note";
       case "quotation":
-        return "QUOTATION"
+        return "QUOTATION";
       default:
-        return "DOCUMENT"
+        return "DOCUMENT";
     }
-  }
+  };
 
-  const documentTypeDisplay = getDocumentTypeDisplay()
+  const documentTypeDisplay = getDocumentTypeDisplay();
 
   // Determine if totals should be shown
-  const showTotals = data.documentType === "invoice" || (data.documentType === "quotation" && data.showTotals)
+  const showTotals =
+    data.documentType === "invoice" ||
+    (data.documentType === "quotation" && data.showTotals);
 
   // Determine if rate and amount columns should be shown
-  const showRateAndAmount = data.documentType !== "delivery-challan"
+  const showRateAndAmount = data.documentType !== "delivery-challan";
 
   // Calculate due amount for invoices
-  const dueAmount = data.documentType === "invoice" ? data.total - data.advance : 0
+  const dueAmount =
+    data.documentType === "invoice" ? data.total - data.advance : 0;
 
   // Determine if advance and due should be shown (only for invoices with advance > 0)
-  const showAdvanceAndDue = data.documentType === "invoice" && data.advance > 0
+  const showAdvanceAndDue = data.documentType === "invoice" && data.advance > 0;
 
   // Check if address should be displayed
-  const showAddress = data.address && data.address.trim() !== ""
+  const showAddress = data.address && data.address.trim() !== "";
 
   // Get currency symbol
   const getCurrencySymbol = () => {
-    return currencySymbols[data.currency] || "৳"
-  }
+    return currencySymbols[data.currency] || "৳";
+  };
 
   return (
     <div className="bg-white w-full max-w-[800px] mx-auto shadow-lg print:shadow-none print:w-full print:max-w-none print:mx-0 print:p-0 print:overflow-hidden relative">
@@ -242,26 +245,18 @@ export default function InvoicePreview({ data }: InvoicePreviewProps) {
 
       {/* HEADER SECTION */}
       <div className="relative h-[150px] w-full print:h-[100px]">
-        {/* Logo and company name */}
+        {/* Logo and company name - conditional layout */}
         <div className="absolute top-8 left-8 flex items-center z-10">
-          <div className="relative w-16 h-16 print:w-12 print:h-12 overflow-hidden">
-            {data.companyInfo.logo ? (
+          {data.companyInfo.logo && (
+            <div className="relative w-16 h-16 print:w-12 print:h-12 overflow-hidden mr-4">
               <img
                 src={data.companyInfo.logo || "/placeholder.svg"}
                 alt={`${data.companyInfo.name} Logo`}
                 className="w-full h-full object-contain"
               />
-            ) : (
-              <Image
-                src="/logo.png"
-                alt="Company Logo"
-                width={64}
-                height={64}
-                className="w-full h-full object-contain"
-              />
-            )}
-          </div>
-          <div className="ml-4">
+            </div>
+          )}
+          <div>
             <h1 className="text-[#1e4e6c] text-3xl font-bold print:text-2xl leading-tight">
               {data.companyInfo.name.split(" ").map((word, index) => (
                 <div key={index}>{word}</div>
@@ -281,14 +276,16 @@ export default function InvoicePreview({ data }: InvoicePreviewProps) {
       <div className="px-8 py-6 print:px-6 print:py-6 invoice-content">
         {/* Document Type and Number */}
         <div className="mb-8 print:mb-6">
-          <h2 className="text-xl font-bold text-[#1e4e6c] uppercase">{documentTypeDisplay}</h2>
+          <h2 className="text-xl font-bold text-[#1e4e6c] uppercase">
+            {documentTypeDisplay}
+          </h2>
           {data.invoiceNumber && (
             <p className="text-gray-600 mt-1">
               {data.documentType === "invoice"
                 ? "Invoice"
                 : data.documentType === "delivery-challan"
-                  ? "Challan"
-                  : "Quotation"}{" "}
+                ? "Challan"
+                : "Quotation"}{" "}
               #: {data.invoiceNumber}
             </p>
           )}
@@ -297,21 +294,29 @@ export default function InvoicePreview({ data }: InvoicePreviewProps) {
         {/* Invoice details */}
         <div className="grid grid-cols-[120px_1fr] gap-y-4 mb-10 print:gap-y-3 print:mb-8">
           <div className="text-[#1e4e6c] font-medium">RECIPIENT</div>
-          <div className="font-medium text-gray-800">{data.recipient || "Microsoft Corporation"}</div>
+          <div className="font-medium text-gray-800">
+            {data.recipient || "Microsoft Corporation"}
+          </div>
 
           <div className="text-[#1e4e6c] font-medium">SUBJECT</div>
-          <div className="font-medium text-gray-800">{data.subject || "Software Development Services"}</div>
+          <div className="font-medium text-gray-800">
+            {data.subject || "Software Development Services"}
+          </div>
 
           {/* Only show address if it has content */}
           {showAddress && (
             <>
               <div className="text-[#1e4e6c] font-medium">ADDRESS</div>
-              <div className="font-medium text-gray-800 whitespace-pre-line">{data.address}</div>
+              <div className="font-medium text-gray-800 whitespace-pre-line">
+                {data.address}
+              </div>
             </>
           )}
 
           <div className="text-[#1e4e6c] font-medium">DATE</div>
-          <div className="font-medium text-gray-800">{formatDate(data.date) || "15 Mar, 2025"}</div>
+          <div className="font-medium text-gray-800">
+            {formatDate(data.date) || "15 Mar, 2025"}
+          </div>
         </div>
 
         {/* Table */}
@@ -343,9 +348,13 @@ export default function InvoicePreview({ data }: InvoicePreviewProps) {
                 >
                   {showRateAndAmount ? (
                     <>
-                      <div className="col-span-3">{item.product || "Software License"}</div>
+                      <div className="col-span-3">
+                        {item.product || "Software License"}
+                      </div>
                       <div className="col-span-4">{item.description}</div>
-                      <div className="text-center col-span-2">{item.quantity || 1}</div>
+                      <div className="text-center col-span-2">
+                        {item.quantity || 1}
+                      </div>
                       <div className="text-center col-span-1">
                         {getCurrencySymbol()}
                         {item.rate ? item.rate.toFixed(2) : "299.00"}
@@ -357,9 +366,13 @@ export default function InvoicePreview({ data }: InvoicePreviewProps) {
                     </>
                   ) : (
                     <>
-                      <div className="col-span-5">{item.product || "Software License"}</div>
+                      <div className="col-span-5">
+                        {item.product || "Software License"}
+                      </div>
                       <div className="col-span-5">{item.description}</div>
-                      <div className="text-center col-span-2">{item.quantity || 1}</div>
+                      <div className="text-center col-span-2">
+                        {item.quantity || 1}
+                      </div>
                     </>
                   )}
                 </div>
@@ -371,8 +384,12 @@ export default function InvoicePreview({ data }: InvoicePreviewProps) {
                     <div className="col-span-3">Software License</div>
                     <div className="col-span-4">Annual subscription</div>
                     <div className="text-center col-span-2">1</div>
-                    <div className="text-center col-span-1">{getCurrencySymbol()}299.00</div>
-                    <div className="text-right col-span-2">{getCurrencySymbol()}299</div>
+                    <div className="text-center col-span-1">
+                      {getCurrencySymbol()}299.00
+                    </div>
+                    <div className="text-right col-span-2">
+                      {getCurrencySymbol()}299
+                    </div>
                   </>
                 ) : (
                   <>
@@ -397,7 +414,9 @@ export default function InvoicePreview({ data }: InvoicePreviewProps) {
 
                 {data.deliveryCost > 0 && (
                   <>
-                    <div className="text-[#1e4e6c] font-medium">Delivery Cost</div>
+                    <div className="text-[#1e4e6c] font-medium">
+                      Delivery Cost
+                    </div>
                     <div className="font-medium">
                       {getCurrencySymbol()}
                       {data.deliveryCost.toFixed(0)}
@@ -442,28 +461,34 @@ export default function InvoicePreview({ data }: InvoicePreviewProps) {
           )}
         </div>
 
-        {/* Terms and conditions - only show for quotations */}
-        {data.documentType === "quotation" && (
-          <div className="mt-8 mb-6 print:mb-4">
-            <h3 className="font-bold mb-1 print:text-xs">Terms & Conditions:</h3>
-            <ul className="list-disc pl-4 space-y-0 print:text-xs text-sm">
-              <li>A 50% advance payment is required. Remaining 50% due upon completion within 15 days of delivery.</li>
-              <li>Valid for 15 days from issue date unless specified (*depends on raw materials price).</li>
-              <li>Changes after confirmation may incur additional costs.</li>
-              <li>Delivery dates agreed upon at order confirmation.</li>
-              <li>Prices exclude Vat & Taxes. A carrying charge will be added.</li>
-            </ul>
-          </div>
-        )}
+        {/* Terms and conditions - only show for quotations when enabled */}
+        {data.documentType === "quotation" &&
+          data.termsAndConditions?.includeTerms &&
+          data.termsAndConditions.terms.length > 0 && (
+            <div className="mt-8 mb-6 print:mb-4">
+              <h3 className="font-bold mb-1 print:text-xs">
+                Terms & Conditions:
+              </h3>
+              <ul className="list-disc pl-4 space-y-0 print:text-xs text-sm">
+                {data.termsAndConditions.terms.map((term, index) => (
+                  <li key={index}>{term}</li>
+                ))}
+              </ul>
+            </div>
+          )}
       </div>
 
       {/* FOOTER SECTION - Fixed at bottom */}
       <div className="relative mt-auto invoice-footer bg-white pt-4">
         {/* Signature Section */}
         <div
-          className={`flex ${data.documentType === "delivery-challan" ? "justify-between" : "justify-end"} px-8 print:px-4 mb-4`}
+          className={`flex ${
+            data.documentType === "delivery-challan"
+              ? "justify-between"
+              : "justify-end"
+          } px-8 print:px-4 mb-4`}
         >
-          {/* Recipient Signature - Only for Delivery Challan */}
+          {/* Recipient Signature - Only for Delivery Note */}
           {data.documentType === "delivery-challan" && (
             <div className="text-center w-40">
               <div className="h-12 flex items-end justify-center">
@@ -471,7 +496,9 @@ export default function InvoicePreview({ data }: InvoicePreviewProps) {
               </div>
               <div className="mt-2">
                 <div className="font-medium">Recipient's Signature</div>
-                <div className="text-sm text-gray-600">I have received all items properly</div>
+                <div className="text-sm text-gray-600">
+                  I have received all items properly
+                </div>
               </div>
             </div>
           )}
@@ -485,7 +512,9 @@ export default function InvoicePreview({ data }: InvoicePreviewProps) {
                 </div>
               </div>
               <div className="mt-2">
-                <div className="font-medium">{data.signatureInfo.name || "Name"}</div>
+                <div className="font-medium">
+                  {data.signatureInfo.name || "Name"}
+                </div>
                 <div>{data.signatureInfo.designation || "Designation"}</div>
               </div>
             </div>
@@ -540,5 +569,5 @@ export default function InvoicePreview({ data }: InvoicePreviewProps) {
         </div>
       </div>
     </div>
-  )
+  );
 }

@@ -38,3 +38,12 @@ export interface InvoiceData {
   companyInfo: CompanyInfo
   signatureInfo: SignatureInfo
 }
+
+
+export interface InvoiceData {
+  // ... existing properties
+  termsAndConditions?: {
+    includeTerms: boolean;
+    terms: string[];
+  };
+}
